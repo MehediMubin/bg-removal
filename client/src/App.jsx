@@ -1,7 +1,16 @@
+import { Route, Routes } from "react-router-dom";
+import BuyCredit from "./pages/BuyCredit";
+import Home from "./pages/Home";
+import Result from "./pages/Result";
+
 const App = () => {
    return (
       <div>
-         <h1 className="text-4xl font-bold">Background Removal App </h1>
+         <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/result" element={<Result />} />
+            <Route path="/buy" element={<BuyCredit />} />
+         </Routes>
       </div>
    );
 };
