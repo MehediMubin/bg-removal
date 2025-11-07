@@ -21,3 +21,7 @@
    background-repeat: no-repeat;
    cursor: pointer;
 }
+
+.bg-layer {
+   background-image: url(/bg_layer.png);
+}
