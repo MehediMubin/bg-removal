@@ -26,26 +26,49 @@ const clerkWebhooks = async (req, res) => {
 
       switch (type) {
          case "user.created": {
+            // Safely extract email and photo (Clerk payloads may vary)
+            const email =
+               data?.email_addresses?.[0]?.email_address ||
+               data?.email_address?.[0]?.email_address ||
+               data?.primary_email ||
+               data?.email ||
+               "";
+
+            const photo = data?.image_url || data?.profile_image_url || "";
+
+            if (!email) {
+               console.error(
+                  "Webhook missing required email field on user.created",
+                  {
+                     dataKeys: Object.keys(data || {}),
+                  }
+               );
+               return res
+                  .status(400)
+                  .json({
+                     success: false,
+                     message: "Missing email in webhook payload",
+                  });
+            }
+
             const userData = {
                clerkId: data.id,
-               email: data.email_address[0].email_address,
+               email,
                firstName: data.first_name,
                lastName: data.last_name,
-               photo: data.image_url,
+               photo,
             };
+
             try {
                await userModel.create(userData);
             } catch (dbErr) {
                console.error("Failed to create user in DB:", dbErr);
-               // return an error response so Clerk knows something failed
                return res
                   .status(500)
                   .json({ success: false, message: "DB create failed" });
             }
-            res.json({
-               success: true,
-               message: "User created successfully",
-            });
+
+            res.json({ success: true, message: "User created successfully" });
             break;
          }
          case "user.updated": {
