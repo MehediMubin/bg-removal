@@ -9,11 +9,7 @@ const clerkWebhooks = async (req, res) => {
       // create a Svix instance with clerk webhook secret.
       const whook = new Webhook(process.env.CLERK_WEBHOOK_SECRET);
 
-      // Use the raw body captured by express.json verify option so signature
-      // verification uses the exact bytes sent by Clerk/Svix.
-      const raw = req.rawBody || (req.body && JSON.stringify(req.body));
-
-      await whook.verify(raw, {
+      await whook.verify(JSON.stringify(req.body), {
          "svix-id": req.headers["svix-id"],
          "svix-timestamp": req.headers["svix-timestamp"],
          "svix-signature": req.headers["svix-signature"],
