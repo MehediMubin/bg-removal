@@ -12,15 +12,7 @@ await connectDB();
 
 // Middlewares
 app.use(cors());
-// capture raw body for webhook signature verification (Svix / Clerk)
-app.use(
-   express.json({
-      verify: (req, res, buf) => {
-         // store raw body buffer/string for later verification
-         req.rawBody = buf;
-      },
-   })
-);
+app.use(express.json());
 app.use(morgan("dev"));
 
 // API routes
