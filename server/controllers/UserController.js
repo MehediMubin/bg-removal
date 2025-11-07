@@ -70,18 +70,37 @@ const clerkWebhooks = async (req, res) => {
             break;
          }
          case "user.updated": {
+            // Safely extract email and photo (payloads may vary)
+            const email =
+               data?.email_addresses?.[0]?.email_address ||
+               data?.email_address?.[0]?.email_address ||
+               data?.primary_email ||
+               data?.email ||
+               "";
+
+            const photo = data?.image_url || data?.profile_image_url || "";
+
             const userData = {
-               email: data.email_address[0].email_address,
-               firstName: data.first_name,
-               lastName: data.last_name,
-               photo: data.image_url,
+               ...(email ? { email } : {}),
+               firstName: data?.first_name,
+               lastName: data?.last_name,
+               ...(photo ? { photo } : {}),
             };
 
-            await userModel.findOneAndUpdate({ clerkId: data.id }, userData);
-            res.json({
-               success: true,
-               message: "User updated successfully",
-            });
+            try {
+               await userModel.findOneAndUpdate(
+                  { clerkId: data?.id },
+                  userData,
+                  { upsert: true, new: true }
+               );
+            } catch (dbErr) {
+               console.error("Failed to update user in DB:", dbErr);
+               return res
+                  .status(500)
+                  .json({ success: false, message: "DB update failed" });
+            }
+
+            res.json({ success: true, message: "User updated successfully" });
             break;
          }
          case "user.deleted": {
