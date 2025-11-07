@@ -9,13 +9,20 @@ const clerkWebhooks = async (req, res) => {
       // create a Svix instance with clerk webhook secret.
       const whook = new Webhook(process.env.CLERK_WEBHOOK_SECRET);
 
-      await whook.verify(JSON.stringify(req.body), {
+      // Use raw body if available (set by express.json verify) to avoid
+      // signature mismatches caused by JSON re-stringify.
+      const raw = req.rawBody || (req.body && JSON.stringify(req.body));
+
+      await whook.verify(raw, {
          "svix-id": req.headers["svix-id"],
          "svix-timestamp": req.headers["svix-timestamp"],
          "svix-signature": req.headers["svix-signature"],
       });
 
-      const { data, type } = req.body;
+      const { data, type } = req.body || {};
+
+      // Debug: log the incoming event type so we can confirm webhooks arrive
+      console.log("Clerk webhook received:", type);
 
       switch (type) {
          case "user.created": {
@@ -26,8 +33,15 @@ const clerkWebhooks = async (req, res) => {
                lastName: data.last_name,
                photo: data.image_url,
             };
-
-            await userModel.create(userData);
+            try {
+               await userModel.create(userData);
+            } catch (dbErr) {
+               console.error("Failed to create user in DB:", dbErr);
+               // return an error response so Clerk knows something failed
+               return res
+                  .status(500)
+                  .json({ success: false, message: "DB create failed" });
+            }
             res.json({
                success: true,
                message: "User created successfully",
