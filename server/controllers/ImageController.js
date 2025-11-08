@@ -1,6 +1,7 @@
 import FormData from "form-data";
 import fs from "fs";
 import userModel from "../models/userModel.js";
+import axios from "axios";
 
 // Controller function to remove bg from image
 const removeBgImage = async (req, res) => {

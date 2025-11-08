@@ -44,6 +44,32 @@ const AppContextProvider = (props) => {
          setResultImage(false);
 
          navigate("/result");
+
+         const token = await getToken();
+         const formData = new FormData();
+         image && formData.append("image", image);
+
+         const { data } = await axios.post(
+            backendUrl + "/api/image/remove-bg",
+            formData,
+            {
+               headers: {
+                  token,
+               },
+            }
+         );
+
+         if (data.success) {
+            setResultImage(data.image);
+            data.creditBalance && setCredit(data.creditBalance);
+            toast.success("Background removed successfully");
+         } else {
+            toast.error(data.message);
+            data.creditBalance && setCredit(data.creditBalance);
+            if (data.creditBalance <= 0) {
+               navigate("/buy");
+            }
+         }
       } catch (error) {
          console.error("Background removal failed:", error);
          toast.error("Background removal failed: " + error.message);
@@ -58,6 +84,8 @@ const AppContextProvider = (props) => {
       image,
       setImage,
       removeBg,
+      resultImage,
+      setResultImage,
    };
 
    return (
