@@ -127,17 +127,32 @@ const clerkWebhooks = async (req, res) => {
 // API controller function to get user available credits data
 const getUserAvailableCredits = async (req, res) => {
    try {
-      const { clerkId } = req.body;
+      // Prefer clerkId set by auth middleware (req.user), but allow body fallback
+      const clerkId = req.user?.clerkId || req.body?.clerkId;
+
+      if (!clerkId) {
+         return res.json({
+            success: false,
+            message: "Missing clerkId",
+         });
+      }
 
       const userData = await userModel.findOne({ clerkId });
 
-      res.json({
+      if (!userData) {
+         return res.json({
+            success: false,
+            message: "User not found",
+         });
+      }
+
+      return res.json({
          success: true,
          credits: userData.creditBalance,
       });
    } catch (error) {
       console.error("Failed to get user credits:", error);
-      res.json({
+      return res.status(500).json({
          success: false,
          message: error.message,
       });
