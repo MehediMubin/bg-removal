@@ -3,6 +3,7 @@ import "dotenv/config";
 import express from "express";
 import morgan from "morgan";
 import connectDB from "./configs/mongodb.js";
+import imageRouter from "./routes/imageRoutes.js";
 import userRouter from "./routes/userRoutes.js";
 
 // App Config
@@ -21,6 +22,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/user", userRouter);
+app.use("/api/image", imageRouter);
 
 app.listen(PORT, () => {
    console.log(`Server running on port: ${PORT}`);
