@@ -19,8 +19,6 @@ const AppContextProvider = (props) => {
             headers: { token },
          });
 
-         console.log(data);
-
          if (data.success) {
             setCredit(data.credits);
             console.log(data.credits);
