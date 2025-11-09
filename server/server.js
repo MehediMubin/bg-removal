@@ -12,7 +12,12 @@ const app = express();
 await connectDB();
 
 // Middlewares
-app.use(cors());
+app.use(
+   cors({
+      origin: "https://bg-removal-client-rust.vercel.app",
+      credentials: true,
+   })
+);
 app.use(express.json());
 app.use(morgan("dev"));
 
